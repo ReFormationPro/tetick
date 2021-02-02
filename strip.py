@@ -9,6 +9,7 @@ musts_raw = json.load(open("musts.json", "r"))
 
 # convert times in a "t": node
 def tomins(clock):
+	return clock				# TODO Modified
 	split = clock.split(":")
 	return int(split[0]) * 60 + int(split[1])
 def convert(tarr):
@@ -18,8 +19,11 @@ out = []
 # ALL AA-ZZ constraint is effectively no constraint. so remove all constraints if it's present.
 def filterc(cs):
 	for c in cs:
-		if c["s"] == "AA" and c["e"] == "ZZ" and c["d"] == "ALL":
-			return []
+		try:
+			if c["s"] == "AA" and c["e"] == "ZZ" and c["d"] == "ALL":
+				return []
+		except TypeError:
+			print c
 	return cs
 
 ins_set = set()
@@ -42,6 +46,7 @@ def lookup(id):
 
 musts = {}
 for dept in musts_raw:
+	break                   # TODO
 	musts[dept] = {}
 	for term in musts_raw[dept]:
 		musts[dept][term] = [lookup(id) for id in musts_raw[dept][term] if lookup(id) is not None]
