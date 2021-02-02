@@ -1,3 +1,8 @@
+# tetick itu
+Tetick ITU is a course scheduler based on tetick. See below for more information about tetick.
+Currently must course addition, section constraints do not work.
+Capacity check constraint can be easily implemented.
+
 # tetick
 
 tetick is a course scheduler which takes course data and constructs possible schedules.

@@ -28,6 +28,7 @@ def filterc(cs):
 
 ins_set = set()
 for cnode in cdata_raw:
+	print cnode
 	for snode in cnode["s"].values():
 		ins_set.update(snode["i"])
 

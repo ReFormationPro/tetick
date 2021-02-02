@@ -10,6 +10,8 @@ printable = set(string.printable)
 import codecs, sys
 sys.stdout = codecs.getwriter("UTF-8")(sys.stdout)
 
+from HashMap import HashTable
+
 # this scrapes sis itu for all the course data.
 # see data_spec.md for interpreting out_file.
 
@@ -57,7 +59,7 @@ def loadAllSections(ccode):
         section = {}
         section["CRN"] = ch.next().text
         section["Course Code"] = ch.next().text
-        ch.next()  # Skip
+        section["Course Title"] = ch.next().text
         section["Instructor"] = ch.next().text
         section["Building"] = ch.next().text
         # TODO Find a more elegant way to do this
@@ -113,16 +115,23 @@ def getTimes(sec):
 #courses = getCoursesList()
 courses = json.load(open("all.json", "r"))
 courses_data = []
-for c in courses[1:10]: # TODO Parse all
-    print "Loading sections of course %s" %c
+for c in courses[1:]:
+    print "Loading courses of department %s" %c
     sections = loadAllSections(c)
-    course = {"n":  c, "c": c, "s": {}}
+    alternatives = HashTable(len(sections))
     for i, s in enumerate(sections[2:]):
         times = getTimes(s)
-        course["s"][c+" "+s["CRN"]] = {"i": [s["Instructor"]], "c": [], "t": times} # TODO
-    courses_data.append(course)
-    #break
+        sectionCode = s["Course Code"]+" "+s["CRN"]    # ie. "MAT 103 20726"
+        course = alternatives.get_val(s["Course Code"])
+        if course != None:  # Append section to the course
+            course["s"][sectionCode] = {"i": [s["Instructor"]], "c": [], "t": times}
+        else:   # Create course
+            course = {"n":  s["Course Code"], "c": s["Course Title"], "s": {}}
+            course["s"][sectionCode] = {"i": [s["Instructor"]], "c": [], "t": times}
+            alternatives.set_val(s["Course Code"], course)
+    courses_data += alternatives.to_list()
 json.dump(courses_data, open(out_file, "w"))
+
 
 
 
