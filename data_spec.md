@@ -14,16 +14,18 @@ the course data is organized in the following way:
 3. COURSE_SECTIONS is an object of the type
 `{SECTION_NUMBER1: SECTION_DATA1, SECTION_NUMBER2: SECTION_DATA2...}`
 4. SECTION_DATA is an object of the type
-`{"i": SECTION_INSTRUCTORS, "c": SECTION_CONSTRAINTS, "t": SECTION_TIMES}`
-5. SECTION_INSTRUCTORS is an array of the type
+`{"i": SECTION_INSTRUCTORS, "c": SECTION_CONSTRAINTS, "a": AVAILABLE_CAPACITY, "t": SECTION_TIMES}`
+5. AVAILABLE_CAPACITY is an integer calculated as "Capacity" - "Enrolled"
+`INTEGER`
+6. SECTION_INSTRUCTORS is an array of the type
 `[INSTRUCTOR1, INSTRUCTOR2]`
-6. SECTION_TIMES is an array of the type
+7. SECTION_TIMES is an array of the type
 `[PERIOD1, PERIOD2...]`
-7. PERIOD is an object of the type
+8. PERIOD is an object of the type
 `{"s": START_TIME, "e": "END_TIME", "d": DAY, "p": COURSE_LOCATION}`
-9. SECTION_CONSTRAINTS is an array of the type
+10. SECTION_CONSTRAINTS is an array of the type
 `[CONSTRAINT1, CONSTRAINT2...]`
-10. CONSTRAINT is an object of the type
+11. CONSTRAINT is an object of the type
 `{"s": SURNAME_START ,"e": SURNAME_END, "d": DEPARTMENT}`
 
 the data for compulsory courses are organized in the following way:
