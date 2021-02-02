@@ -28,7 +28,6 @@ def filterc(cs):
 
 ins_set = set()
 for cnode in cdata_raw:
-	print cnode
 	for snode in cnode["s"].values():
 		ins_set.update(snode["i"])
 
@@ -37,7 +36,8 @@ ins_map = {k: v for v, k in enumerate(ins)}
 
 for cnode in cdata_raw:
 	outc = {"c": cnode["c"], "n": cnode["n"]}
-	outc["s"] = {snum: {"c": filterc(snode["c"]), "i": [ins_map[ins] for ins in snode["i"]], "t": convert(snode["t"])} for snum, snode in cnode["s"].iteritems() if len(snode["t"]) > 0}
+	print cnode
+	outc["s"] = {snum: {"c": filterc(snode["c"]), "i": [ins_map[ins] for ins in snode["i"]], "a": snode["a"], "t": convert(snode["t"])} for snum, snode in cnode["s"].iteritems() if len(snode["t"]) > 0}
 	if len(outc["s"]) > 0: out.append(outc)
 
 # look up a course ID in courses

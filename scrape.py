@@ -124,10 +124,10 @@ for c in courses[1:]:
         sectionCode = s["Course Code"]+" "+s["CRN"]    # ie. "MAT 103 20726"
         course = alternatives.get_val(s["Course Code"])
         if course != None:  # Append section to the course
-            course["s"][sectionCode] = {"i": [s["Instructor"]], "c": [], "t": times}
+            course["s"][sectionCode] = {"i": [s["Instructor"]], "c": [], "t": times, "a": int(s["Capacity"])-int(s["Enrolled"])}
         else:   # Create course
             course = {"n":  s["Course Code"], "c": s["Course Title"], "s": {}}
-            course["s"][sectionCode] = {"i": [s["Instructor"]], "c": [], "t": times}
+            course["s"][sectionCode] = {"i": [s["Instructor"]], "c": [], "t": times, "a": int(s["Capacity"])-int(s["Enrolled"])}
             alternatives.set_val(s["Course Code"], course)
     courses_data += alternatives.to_list()
 json.dump(courses_data, open(out_file, "w"))

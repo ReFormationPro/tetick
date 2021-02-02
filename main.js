@@ -148,7 +148,7 @@ function rmblocks(){
 /* make an options div, return it. this is just DOM crud and clutters course() so we move it out. */
 function mkopts(){
 	var opts = divclass("opts"), opt = divclass("opt"), sname = cbox("sname"),
-	nodept = cbox("nodept"), phantom=cbox("phantom");
+	nodept = cbox("nodept"), phantom=cbox("phantom"), capcheck=cbox("capcheck");
 	opt.appendChild(sname);
 	opt.innerHTML += "check for surname";
 	opts.appendChild(opt);
@@ -159,6 +159,10 @@ function mkopts(){
 	opt = divclass("opt");
 	opt.appendChild(phantom);
 	opt.innerHTML += "phantom";
+	opts.appendChild(opt);
+	opt = divclass("opt");
+	opt.appendChild(capcheck);
+	opt.innerHTML += "capacity check";
 	opts.appendChild(opt);
 	return opts;
 }
@@ -321,7 +325,8 @@ function df_form(){
 grab("dontfill").onclick = df_form;
 
 /* is this section fine with these values? deptcheck and sncheck are self explanatory. returns true if yes. */
-function ck_sect(sect, deptcheck, sncheck){
+/* Added capcheck since sis.itu shows capacity */
+function ck_sect(sect, deptcheck, sncheck, capcheck){
 	var i, dept=grab("dept").value.toUpperCase(), sname=grab("surname").value.toUpperCase(),
 	deptck = function(c){
 		if(!dept || !deptcheck) return true;
@@ -332,9 +337,12 @@ function ck_sect(sect, deptcheck, sncheck){
 		var cmp = function(x){ return sname.localeCompare(x, "tr"); };
 		if(cmp(c.s) >= 0 && cmp(c.e) <= 0) return true;
 		return false;
+	}, capchk = function(c){
+	    if(!capcheck) return true;
+	    return c.a > 0;
 	};
 	if(sect.c.length === 0) return true;
-	for(i=0; i<sect.c.length; i++) if(deptck(sect.c[i]) && snck(sect.c[i])) return true;
+	for(i=0; i<sect.c.length; i++) if(deptck(sect.c[i]) && snck(sect.c[i]) && capchk(sect.c[i])) return true;
 	return false;
 }
 /* get all possible sections for currently added courses.
@@ -342,15 +350,16 @@ function ck_sect(sect, deptcheck, sncheck){
  * returns an array of arrays, mapped to the courses array in practice.
  * each array has the suitable section nodes in it. */
 function get_sects(){
-	var i, j, n, node, boxes, deptcheck, sncheck, out = [];
+	var i, j, n, node, boxes, deptcheck, sncheck, capcheck, out = [];
 	for(i=0; i<courses.length; i++){
 		node = [];
 		boxes = courses[i].handle.getElementsByClassName("boxes")[0].querySelectorAll("input[type=checkbox]:checked");
 		deptcheck = !grab("nodeptcheck").checked && !courses[i].handle.getElementsByClassName("nodept")[0].checked;
 		sncheck = grab("sncheck").checked || courses[i].handle.getElementsByClassName("sname")[0].checked;
+		capcheck = grab("capcheck").checked || courses[i].handle.getElementsByClassName("capcheck")[0].checked;
 		for(j=0; j<boxes.length; j++){
 			n = boxes[j].nextSibling.data;
-			if(!ck_sect(courses[i].data.s[n], deptcheck, sncheck)) continue;
+			if(!ck_sect(courses[i].data.s[n], deptcheck, sncheck, capcheck)) continue;
 			courses[i].data.s[n].n = n;
 			node.push(courses[i].data.s[n]);
 		}
@@ -544,7 +553,7 @@ grab("add").onclick = function(){
 };
 
 /* remaining bound with those is hard */
-grab("sncheck").onchange = grab("surname").onchange = grab("nodeptcheck").onchange = grab("allphantom").onchange = unbind;
+grab("capcheck").onchange = grab("sncheck").onchange = grab("surname").onchange = grab("nodeptcheck").onchange = grab("allphantom").onchange = unbind;
 
 /* the save link encodes the state in window.location.hash, the URL effectively.
  * if we find a non-empty window.location.hash, we attempt to restore a state from it.
@@ -575,6 +584,7 @@ function getstate(){
 	out.t = grab("semester").value;
 	out.sn = grab("surname").value;
 	out.sc = grab("sncheck").checked ? 1 : 0;
+	out.cc = grab("capcheck").checked ? 1 : 0;
 	out.dc = grab("nodeptcheck").checked ? 1 : 0;
 	out.ap = grab("allphantom").checked ? 1 : 0;
 	out.i = isidiot;
@@ -608,6 +618,7 @@ function restorestate(st){
 	grab("semester").value = st.t;
 	grab("surname").value = st.sn;
 	grab("sncheck").checked = st.sc ? true : false;
+	grab("capcheck").checked = st.sc ? true : false;
 	grab("nodeptcheck").checked = st.dc ? true : false;
 	grab("allphantom").checked = st.ap ? true : false;
 
