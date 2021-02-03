@@ -1,9 +1,12 @@
-# tetick itu
+# Tetick ITU
 Tetick ITU is a course scheduler based on tetick. See below for more information about tetick.
-Currently must course addition, section constraints do not work.
-Capacity check constraint is added; however, not tested.
-Instructors are not shown properly.
-Some courses do not have valid hours/days, they are assigned to sunday from 0 to 0. Behaviour unknown. May cause conflicts.
+
+# Tetick ITU Status
+- Currently must course addition, section constraints do not work.
+- Capacity check constraint is added; however, not tested.
+- Instructors are not shown properly.
+- Some courses do not have valid hours/days, they are ignored.
+- For development purposes, a cache mode is added to scraper. Cache mode might make it look like the database is updated when it is not.
 
 # tetick
 

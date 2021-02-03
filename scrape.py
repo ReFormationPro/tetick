@@ -15,7 +15,13 @@ from HashMap import HashTable
 # this scrapes sis itu for all the course data.
 # see data_spec.md for interpreting out_file.
 
+# Use this to not send a request to sis_url everytime. Also gives us speed.
+USE_CACHE = True
+CACHE_DIR = "./cache/"
 out_file="data.json"
+
+if USE_CACHE:
+    print "Warning: Cache mode is active."
 
 sis_url="https://www.sis.itu.edu.tr/TR/ogrenci/ders-programi/ders-programi.php?seviye=LS"
 
@@ -36,10 +42,17 @@ headers = {"Host": "www.sis.itu.edu.tr",
                 "Pragma": "no-cache",
                 "Cache-Control": "no-cache"
                 }
-
 def getCoursesList():
-    index_text = requests.get(sis_url, headers=headers)
-    soup = BeautifulSoup(index_text.text, "html.parser")
+    index_text = ""
+    if USE_CACHE and os.path.isfile(CACHE_DIR+"index.html"):
+        with open(CACHE_DIR+"index.html", "r") as f:
+            index_text = "".join(f.readlines())
+    else:
+        index_text = requests.get(sis_url, headers=headers).text
+        with open(CACHE_DIR+"index.html", "w") as f:
+            f.writelines(index_text.encode("utf8"))
+            f.flush()
+    soup = BeautifulSoup(index_text, "html.parser")
     undergradcourses_option = soup.find(attrs={"name": "derskodu"})
     undergradcourses = []
     for c in undergradcourses_option.children:
@@ -50,8 +63,16 @@ def getCoursesList():
     return undergradcourses
 
 def loadAllSections(ccode):
-    course_text = requests.post(sis_url, headers=headers, data={"seviye": "LS", "derskodu": ccode, "B1": "G%F6ster"})
-    soup = BeautifulSoup(course_text.text, "html.parser")
+    course_text = ""
+    if USE_CACHE and os.path.isfile(CACHE_DIR+ccode):
+        with open(CACHE_DIR+ccode, "r") as f:
+            course_text = "".join(f.readlines())
+    else:
+        course_text = requests.post(sis_url, headers=headers, data={"seviye": "LS", "derskodu": ccode, "B1": "G%F6ster"}).text
+        with open(CACHE_DIR+ccode, "w") as f:
+            f.writelines(course_text.encode("utf8"))
+            f.flush()
+    soup = BeautifulSoup(course_text, "html.parser")
     allrows = soup.find_all("tr")
     allsections = []
     for r in allrows:
@@ -68,6 +89,8 @@ def loadAllSections(ccode):
         for day in days:
             day = day.strip()
             day = filter(lambda x: x in printable, day)
+            if day == "" or day == "----":
+                continue
             if day == "Pazartesi":
                 day = 0
             elif day == "Sal":
@@ -83,8 +106,9 @@ def loadAllSections(ccode):
             elif day == "Pazar":
                 day = 6
             else:
-                print "Assigning to sunday due to Day Error: " + day
-                parsed_days.append(6)
+                print "Skipping day due to Day Error: " + day
+                #print "Assigning to sunday due to Day Error: " + day
+                #parsed_days.append(6)
                 continue
             parsed_days.append(day)
         section["Day"] = parsed_days
@@ -97,10 +121,11 @@ def loadAllSections(ccode):
 
 def getTimes(sec):
     times = []
-    hours = sec["Time"].split("\n")
+    hours = sec["Time"].split(" ")
     for i, hh in enumerate(hours):
-        if hh == "---- " or hh == "" or hh == "/ ":
-            times.append({"s": 0, "e": 0, "d": sec["Day"][i], "p": sec["Building"] + " " + sec["Room"]})
+        if hh == "---- " or hh == "" or hh == "/ " or hh == "/":
+            # TODO No time is specified. What to do?
+            #times.append({"s": 0, "e": 0, "d": sec["Day"][i], "p": sec["Building"] + " " + sec["Room"]})
             continue
         h = hh.split("/")
         try:
@@ -112,16 +137,16 @@ def getTimes(sec):
             return times
     return times
 
-#courses = getCoursesList()
-courses = json.load(open("all.json", "r"))
+courses = getCoursesList()
 courses_data = []
+courses = ["MAT"] * 2
 for c in courses[1:]:
     print "Loading courses of department %s" %c
     sections = loadAllSections(c)
     alternatives = HashTable(len(sections))
     for i, s in enumerate(sections[2:]):
         times = getTimes(s)
-        sectionCode = s["Course Code"]+" "+s["CRN"]    # ie. "MAT 103 20726"
+        sectionCode = s["CRN"]    # ie. "20726"
         course = alternatives.get_val(s["Course Code"])
         if course != None:  # Append section to the course
             course["s"][sectionCode] = {"i": [s["Instructor"]], "c": [], "t": times, "a": int(s["Capacity"])-int(s["Enrolled"])}
