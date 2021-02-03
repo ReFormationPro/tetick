@@ -139,7 +139,6 @@ def getTimes(sec):
 
 courses = getCoursesList()
 courses_data = []
-courses = ["MAT"] * 2
 for c in courses[1:]:
     print "Loading courses of department %s" %c
     sections = loadAllSections(c)
