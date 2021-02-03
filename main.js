@@ -323,7 +323,6 @@ function df_form(){
 	dontfill(d-1, s, e, n);
 }
 grab("dontfill").onclick = df_form;
-
 /* is this section fine with these values? deptcheck and sncheck are self explanatory. returns true if yes. */
 /* Added capcheck since sis.itu shows capacity */
 function ck_sect(sect, deptcheck, sncheck, capcheck){
@@ -337,12 +336,13 @@ function ck_sect(sect, deptcheck, sncheck, capcheck){
 		var cmp = function(x){ return sname.localeCompare(x, "tr"); };
 		if(cmp(c.s) >= 0 && cmp(c.e) <= 0) return true;
 		return false;
-	}, capchk = function(c){
-	    if(!capcheck) return true;
-	    return c.a > 0;
 	};
+	if (capcheck && sect.a <= 0) { // Do capacity check
+	    return false;
+	}
+    // If there are no surname/department constraints for this section, move on
 	if(sect.c.length === 0) return true;
-	for(i=0; i<sect.c.length; i++) if(deptck(sect.c[i]) && snck(sect.c[i]) && capchk(sect.c[i])) return true;
+	for(i=0; i<sect.c.length; i++) if(deptck(sect.c[i]) && snck(sect.c[i])) return true;
 	return false;
 }
 /* get all possible sections for currently added courses.
