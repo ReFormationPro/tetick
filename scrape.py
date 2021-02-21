@@ -139,7 +139,9 @@ def getTimes(sec):
 
 courses = getCoursesList()
 courses_data = []
-for c in courses[1:]:
+for c in courses:
+    if c == "":
+        continue
     print "Loading courses of department %s" %c
     sections = loadAllSections(c)
     alternatives = HashTable(len(sections))
