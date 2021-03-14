@@ -119,8 +119,10 @@ function tomins(clock){
 	return split[0] * 60 + parseInt(split[1]);
 }
 
-/* by default, 08:40 to 17:30 */
-var start_time = 520, end_time = 1050;
+/* by default, 08:30 to 17:30 */
+var start_time = 510, end_time = 1110;
+// Introduced due to a constant default value overshadowing the value here.
+var default_end_time = end_time;
 
 /* draw a block on the table col "day"- from min1 to min2.
  * assumes min2 > min1, if not, weird results can emerge.
@@ -466,7 +468,9 @@ function draw(){
 	flashlighton = 0;
 	hideall();
 	rmblocks();
-	end_time = 1050;
+	// Modification
+    // It's purpose is to reset to default. So added default variables.
+	end_time = default_end_time;
 	for(i=0; i<dontfills.length; i++) if(dontfills[i].e > end_time) end_time = dontfills[i].e;
 	if(cursched >= schedules.length) cursched = 0;
 	var sch = schedules[cursched];
@@ -488,6 +492,7 @@ function draw(){
 		grab("counter").innerHTML = (cursched+1).toString() + "/" + schedules.length;
 	}
 	grab("start_time").innerHTML = toclock(start_time);
+	console.log(end_time);
 	grab("end_time").innerHTML = toclock(end_time);
 	switch(state){
 	case "blank":
