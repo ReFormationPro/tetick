@@ -1,3 +1,4 @@
+from functools import reduce
 # Taken from GeeksForGeeks
 # https://www.geeksforgeeks.org/hash-map-in-python/
 

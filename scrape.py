@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os, re
 import json
@@ -8,7 +8,7 @@ import string
 printable = set(string.printable)
 
 import codecs, sys
-sys.stdout = codecs.getwriter("UTF-8")(sys.stdout)
+#sys.stdout = codecs.getwriter("UTF-8")(sys.stdout)
 
 from HashMap import HashTable
 
@@ -20,8 +20,12 @@ USE_CACHE = True
 CACHE_DIR = "./cache/"
 out_file="data.json"
 
+# Create cache dir if not already exists
+if not os.path.isdir(CACHE_DIR):
+    os.makedirs(CACHE_DIR)
+
 if USE_CACHE:
-    print "Warning: Cache mode is active."
+    print("Warning: Cache mode is active.")
 
 sis_url="https://www.sis.itu.edu.tr/TR/ogrenci/ders-programi/ders-programi.php?seviye=LS"
 
@@ -49,8 +53,8 @@ def getCoursesList():
             index_text = "".join(f.readlines())
     else:
         index_text = requests.get(sis_url, headers=headers).text
-        with open(CACHE_DIR+"index.html", "w") as f:
-            f.writelines(index_text.encode("utf8"))
+        with open(CACHE_DIR+"index.html", "w+") as f:
+            f.writelines(index_text)
             f.flush()
     soup = BeautifulSoup(index_text, "html.parser")
     undergradcourses_option = soup.find(attrs={"name": "derskodu"})
@@ -69,8 +73,8 @@ def loadAllSections(ccode):
             course_text = "".join(f.readlines())
     else:
         course_text = requests.post(sis_url, headers=headers, data={"seviye": "LS", "derskodu": ccode, "B1": "G%F6ster"}).text
-        with open(CACHE_DIR+ccode, "w") as f:
-            f.writelines(course_text.encode("utf8"))
+        with open(CACHE_DIR+ccode, "w+") as f:
+            f.writelines(course_text)
             f.flush()
     soup = BeautifulSoup(course_text, "html.parser")
     allrows = soup.find_all("tr")
@@ -78,17 +82,17 @@ def loadAllSections(ccode):
     for r in allrows:
         ch = r.children
         section = {}
-        section["CRN"] = ch.next().text
-        section["Course Code"] = ch.next().text
-        section["Course Title"] = ch.next().text
-        section["Instructor"] = ch.next().text
-        section["Building"] = ch.next().text
+        section["CRN"] = next(ch).text
+        section["Course Code"] = next(ch).text
+        section["Course Title"] = next(ch).text
+        section["Instructor"] = next(ch).text
+        section["Building"] = next(ch).text
         # TODO Find a more elegant way to do this
-        days = ch.next().text.split(" ")
+        days = next(ch).text.split(" ")
         parsed_days = []
         for day in days:
             day = day.strip()
-            day = filter(lambda x: x in printable, day)
+            day = "".join(list(filter(lambda x: x in printable, day)))
             if day == "" or day == "----":
                 continue
             if day == "Pazartesi":
@@ -106,16 +110,16 @@ def loadAllSections(ccode):
             elif day == "Pazar":
                 day = 6
             else:
-                print "Skipping day due to Day Error: " + day
-                #print "Assigning to sunday due to Day Error: " + day
+                print("Skipping day due to Day Error: %s" % day)
+                #print("Assigning to sunday due to Day Error: " + day)
                 #parsed_days.append(6)
                 continue
             parsed_days.append(day)
         section["Day"] = parsed_days
-        section["Time"] = ch.next().text
-        section["Room"] = ch.next().text
-        section["Capacity"] = ch.next().text
-        section["Enrolled"] = ch.next().text
+        section["Time"] = next(ch).text
+        section["Room"] = next(ch).text
+        section["Capacity"] = next(ch).text
+        section["Enrolled"] = next(ch).text
         allsections.append(section)
     return allsections
 
@@ -133,7 +137,7 @@ def getTimes(sec):
             ehour = int(str(h[1][0:2]))*60+int(str(h[1][2:4]))
             times.append({"s": shour, "e": ehour, "d": sec["Day"][i], "p": sec["Building"] + " " + sec["Room"]})
         except ValueError:
-            print "Error at hour parsing: " + hh
+            print("Error at hour parsing: " + hh)
             return times
     return times
 
@@ -142,7 +146,7 @@ courses_data = []
 for c in courses:
     if c == "":
         continue
-    print "Loading courses of department %s" %c
+    print("Loading courses of department %s" %c)
     sections = loadAllSections(c)
     alternatives = HashTable(len(sections))
     for i, s in enumerate(sections[2:]):
@@ -156,7 +160,7 @@ for c in courses:
             course["s"][sectionCode] = {"i": [s["Instructor"]], "c": [], "t": times, "a": int(s["Capacity"])-int(s["Enrolled"])}
             alternatives.set_val(s["Course Code"], course)
     courses_data += alternatives.to_list()
-json.dump(courses_data, open(out_file, "w"))
+json.dump(courses_data, open(out_file, "w+"))
 
 
 

@@ -5,7 +5,9 @@ import json
 # see data_spec.md:/^while/ for how it does
 
 cdata_raw = json.load(open("data.json", "r"))
-musts_raw = json.load(open("musts.json", "r"))
+# TODO Not implemented
+# musts_raw = json.load(open("musts.json", "r"))
+musts_raw = ""
 
 # convert times in a "t": node
 def tomins(clock):
@@ -23,7 +25,7 @@ def filterc(cs):
 			if c["s"] == "AA" and c["e"] == "ZZ" and c["d"] == "ALL":
 				return []
 		except TypeError:
-			print c
+			print(c)
 	return cs
 
 ins_set = set()
@@ -36,8 +38,8 @@ ins_map = {k: v for v, k in enumerate(ins)}
 
 for cnode in cdata_raw:
 	outc = {"c": cnode["c"], "n": cnode["n"]}
-	print cnode
-	outc["s"] = {snum: {"c": filterc(snode["c"]), "i": [ins_map[ins] for ins in snode["i"]], "a": snode["a"], "t": convert(snode["t"])} for snum, snode in cnode["s"].iteritems() if len(snode["t"]) > 0}
+	print(cnode)
+	outc["s"] = {snum: {"c": filterc(snode["c"]), "i": [ins_map[ins] for ins in snode["i"]], "a": snode["a"], "t": convert(snode["t"])} for snum, snode in cnode["s"].items() if len(snode["t"]) > 0}
 	if len(outc["s"]) > 0: out.append(outc)
 
 # look up a course ID in courses
@@ -72,4 +74,4 @@ window.musts = %s;
 with open("data.js", "w") as f:
 	f.write(a)
 
-print "wrote %d bytes to data.js" % os.path.getsize("data.js")
+print("wrote %d bytes to data.js" % os.path.getsize("data.js"))
